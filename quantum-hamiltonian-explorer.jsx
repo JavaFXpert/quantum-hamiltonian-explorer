@@ -398,7 +398,7 @@ function SectionContent({ sectionId, molecule, bondLength, setBondLength, phaseC
         <p>For {mol.formula}: 2 spatial orbitals {"\u00D7"} 2 spins = <strong>4 qubits</strong> (q0, q1, q2, q3).</p>
         <p>The bonding orbital maps to qubits q2 (spin-up) and q3 (spin-down). The antibonding orbital maps to q0 (spin-up) and q1 (spin-down).</p>
         <p>The ground state configuration {mol.groundStateBitstring} means: q3=1, q2=1 (bonding orbital filled), q1=0, q0=0 (antibonding orbital empty).</p>
-        <InstructionPanel color={phaseColor} show="The MO diagram with qubit labels." use="Toggle 'Show Qubit Mapping' to see how each spin-orbital corresponds to a qubit." observe="The bitstring |1100{'\u27E9'} directly encodes which orbitals are occupied." />
+        <InstructionPanel color={phaseColor} show="The MO diagram with qubit labels." use="Toggle 'Show Qubit Mapping' to see how each spin-orbital corresponds to a qubit." observe={"The bitstring |1100\u27E9 directly encodes which orbitals are occupied."} />
         <MODiagram molecule={molecule} showQubitMapping={true} />
       </div>
     ),
@@ -492,7 +492,7 @@ function SectionContent({ sectionId, molecule, bondLength, setBondLength, phaseC
           <li><strong>Z</strong> (Pauli-Z): Leaves |0{"\u27E9"} alone but flips the sign of |1{"\u27E9"}.</li>
         </ul>
         <p>For multiple qubits, we combine Pauli operators using the <strong>tensor product</strong> (Kronecker product). For example, "ZI" means "apply Z to the first qubit and I to the second."</p>
-        <InstructionPanel color={phaseColor} show="The four Pauli matrices and their tensor products for 2 qubits." use="Click the Pauli tabs to see each 2\u00D72 matrix. Use the dropdowns to build 2-qubit tensor products and see the resulting 4\u00D74 matrix." observe="I leaves everything unchanged. X swaps rows/columns. Z flips signs. The tensor product 'tiles' the matrices." />
+        <InstructionPanel color={phaseColor} show="The four Pauli matrices and their tensor products for 2 qubits." use={"Click the Pauli tabs to see each 2\u00D72 matrix. Use the dropdowns to build 2-qubit tensor products and see the resulting 4\u00D74 matrix."} observe="I leaves everything unchanged. X swaps rows/columns. Z flips signs. The tensor product 'tiles' the matrices." />
         <PauliExplorer />
       </div>
     ),
@@ -557,7 +557,7 @@ function SectionContent({ sectionId, molecule, bondLength, setBondLength, phaseC
         </ul>
         {molecule === "H2" ? (
           <>
-            <InstructionPanel color={phaseColor} show="How the H\u2082 Hamiltonian changes with bond length." use="Drag the bond length slider and watch the matrix update in real time." observe="At the equilibrium distance, the off-diagonal elements (coupling) are strongest. At large distances, the matrix becomes more diagonal." />
+            <InstructionPanel color={phaseColor} show={"How the H\u2082 Hamiltonian changes with bond length."} use="Drag the bond length slider and watch the matrix update in real time." observe="At the equilibrium distance, the off-diagonal elements (coupling) are strongest. At large distances, the matrix becomes more diagonal." />
             <BondLengthExplorer bondLength={bondLength} setBondLength={setBondLength} />
           </>
         ) : (
@@ -618,7 +618,7 @@ function SectionContent({ sectionId, molecule, bondLength, setBondLength, phaseC
           <li>The <strong>equilibrium bond length</strong> (~0.735 {"\u00C5"} for H{"\u2082"})</li>
           <li>The <strong>ground state energy</strong> at equilibrium (~-1.137 Hartree)</li>
         </ul>
-        <InstructionPanel color={phaseColor} show="The potential energy curve for H\u2082: ground state energy vs. bond length." use="Drag the marker along the curve. The energy and bond length update in real time." observe="The curve has a minimum near 0.735 \u00C5. At short distances, energy rises steeply (repulsion). At large distances, it asymptotes (dissociation)." />
+        <InstructionPanel color={phaseColor} show={"The potential energy curve for H\u2082: ground state energy vs. bond length."} use="Drag the marker along the curve. The energy and bond length update in real time." observe={"The curve has a minimum near 0.735 \u00C5. At short distances, energy rises steeply (repulsion). At large distances, it asymptotes (dissociation)."} />
         <PotentialEnergyCurve bondLength={bondLength} setBondLength={setBondLength} />
       </div>
     ),
@@ -660,7 +660,7 @@ function SectionContent({ sectionId, molecule, bondLength, setBondLength, phaseC
     ),
     "4.1.3": () => (
       <div className="space-y-4">
-        <InstructionPanel color={phaseColor} show={`Real-time quantum state evolution under the Hamiltonian of ${mol.formula}.`} use="Select an initial state, press Play, and watch the probabilities evolve. Adjust speed with the slider. Try different initial states and molecules!" observe="Eigenstates don't change (stationary). Basis states like |1100\u27E9 oscillate because they're superpositions of eigenstates. The oscillation speed depends on energy gaps." />
+        <InstructionPanel color={phaseColor} show={`Real-time quantum state evolution under the Hamiltonian of ${mol.formula}.`} use="Select an initial state, press Play, and watch the probabilities evolve. Adjust speed with the slider. Try different initial states and molecules!" observe={"Eigenstates don't change (stationary). Basis states like |1100\u27E9 oscillate because they're superpositions of eigenstates. The oscillation speed depends on energy gaps."} />
         <TimeEvolutionPlayground molecule={molecule} bondLength={bondLength} />
       </div>
     ),
@@ -1098,9 +1098,28 @@ function HamiltonianBuilder({ molecule, bondLength }) {
 
   const displayH = buildStep >= 0 ? partialH : fullH;
 
+  // The IIII (identity) term is a uniform diagonal offset that dominates the color scale
+  // (e.g. -7.509 for LiH vs 0.15 for the next largest term). Subtract it so the
+  // physically meaningful structure drives the colors.
+  const iiiiCoeff = useMemo(() => terms.find(t => t.ops === "IIII")?.coeff || 0, [terms]);
+  const fullMaxVal = useMemo(() => {
+    let mx = 0;
+    for(let i=0;i<n;i++) for(let j=0;j<n;j++) {
+      const v = i === j ? fullH[i][j][0] - iiiiCoeff : fullH[i][j][0];
+      mx = Math.max(mx, Math.abs(v));
+    }
+    return mx || 1;
+  }, [fullH, n, iiiiCoeff]);
+
+  // Highlight the term being added during build animation
+  const buildHighlightH = useMemo(() => {
+    if(buildStep < 0) return null;
+    return buildHamiltonian([terms[buildStep]], mol.numQubits);
+  }, [terms, buildStep, mol.numQubits]);
+
   useEffect(() => {
     if(!isBuilding) return;
-    if(buildStep >= terms.length - 1) { setIsBuilding(false); return; }
+    if(buildStep >= terms.length - 1) { setIsBuilding(false); setBuildStep(-1); return; }
     const timer = setTimeout(() => setBuildStep(s => s + 1), 300);
     return () => clearTimeout(timer);
   }, [isBuilding, buildStep, terms.length]);
@@ -1140,7 +1159,7 @@ function HamiltonianBuilder({ molecule, bondLength }) {
         </div>
         {/* Matrix heatmap */}
         <div className="flex-1">
-          <MatrixHeatmap H={displayH} n={n} highlightH={highlightH} />
+          <MatrixHeatmap H={displayH} n={n} highlightH={hoveredTerm !== null ? highlightH : buildHighlightH} fixedMaxVal={fullMaxVal} diagOffset={iiiiCoeff} />
           {buildStep >= 0 && <p className="text-xs text-gray-500 mt-1">Terms added: {buildStep+1}/{terms.length}</p>}
         </div>
       </div>
@@ -1149,17 +1168,25 @@ function HamiltonianBuilder({ molecule, bondLength }) {
 }
 
 // Shared matrix heatmap component
-function MatrixHeatmap({ H, n, highlightH, showDiagonalOnly }) {
+function MatrixHeatmap({ H, n, highlightH, showDiagonalOnly, fixedMaxVal, diagOffset }) {
   const [tooltip, setTooltip] = useState(null);
-  const maxVal = useMemo(() => {
+  const computedMaxVal = useMemo(() => {
     let mx = 0;
-    for(let i=0;i<n;i++) for(let j=0;j<n;j++) mx = Math.max(mx, Math.abs(H[i][j][0]));
+    const off = diagOffset || 0;
+    for(let i=0;i<n;i++) for(let j=0;j<n;j++) {
+      const v = i === j ? H[i][j][0] - off : H[i][j][0];
+      mx = Math.max(mx, Math.abs(v));
+    }
     return mx || 1;
-  }, [H, n]);
+  }, [H, n, diagOffset]);
+  const maxVal = fixedMaxVal || computedMaxVal;
 
   const cellSize = Math.min(28, Math.floor(400/n));
 
-  const getColor = (val) => {
+  const getColor = (rawVal, i, j) => {
+    // Subtract the uniform identity offset from diagonal for coloring so that
+    // the interesting structure isn't drowned out by the constant energy shift
+    const val = (diagOffset !== undefined && i === j) ? rawVal - (diagOffset || 0) : rawVal;
     const v = val / maxVal;
     if(Math.abs(v) < 0.01) return '#f8fafc';
     if(v > 0) return `rgba(239,68,68,${Math.min(Math.abs(v),1)})`;
@@ -1186,7 +1213,7 @@ function MatrixHeatmap({ H, n, highlightH, showDiagonalOnly }) {
               const dimmed = showDiagonalOnly && i !== j;
               return (
                 <div key={j}
-                  style={{width:cellSize,height:cellSize,backgroundColor: dimmed ? '#f8fafc' : getColor(val),
+                  style={{width:cellSize,height:cellSize,backgroundColor: dimmed ? '#f8fafc' : getColor(val, i, j),
                     border: isHighlighted ? '2px solid #7c3aed' : '1px solid #e2e8f0'}}
                   className="cursor-pointer transition-all"
                   onMouseEnter={() => setTooltip({i,j,val})}
