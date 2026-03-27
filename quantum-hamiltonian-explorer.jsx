@@ -640,20 +640,20 @@ function SectionContent({ sectionId, molecule, bondLength, setBondLength, phaseC
     "4.1.1": () => (
       <div className="space-y-4">
         <p>The Hamiltonian doesn't just tell you about energy levels; it also governs how quantum states <strong>change over time</strong>. The rule is:</p>
-        <p className="text-center font-mono bg-gray-100 p-3 rounded-lg">|{"\u03C8"}(t){"\u27E9"} = e^(-iHt) |{"\u03C8"}(0){"\u27E9"}</p>
-        <p>The operator U(t) = e^(-iHt) is the <strong>time evolution operator</strong>. Don't worry about the exponential of a matrix; think of it as:</p>
+        <p className="text-center bg-gray-100 p-3 rounded-lg">|{"\u03C8"}(t){"\u27E9"} = <em>e</em><sup>{"\u2212"}i<em>H</em>t</sup> |{"\u03C8"}(0){"\u27E9"}</p>
+        <p>The operator U(t) = <em>e</em><sup>{"\u2212"}i<em>H</em>t</sup> is the <strong>time evolution operator</strong>. Don't worry about the exponential of a matrix; think of it as:</p>
         <ul className="list-disc pl-6 space-y-1">
           <li>The Hamiltonian generates a "rotation" in quantum state space.</li>
           <li>Larger energy differences cause faster rotation.</li>
-          <li>The time parameter t is in natural units (where {"\u0127"} = 1).</li>
+          <li>The time parameter <em>t</em> is in natural units (where {"\u0127"} = 1).</li>
         </ul>
       </div>
     ),
     "4.1.2": () => (
       <div className="space-y-4">
-        <p>Eigenstates are special under time evolution. An eigenstate |E_k{"\u27E9"} evolves as:</p>
-        <p className="text-center font-mono bg-gray-100 p-3 rounded-lg">|E_k{"\u27E9"} {"\u2192"} e^(-iE_k t) |E_k{"\u27E9"}</p>
-        <p>The factor e^(-iE_k t) is just a <strong>phase</strong>. It changes the "direction" of the amplitude in the complex plane but doesn't affect the probability: |e^(-iE_k t)|{"\u00B2"} = 1. So the probability distribution <strong>doesn't change</strong>!</p>
+        <p>Eigenstates are special under time evolution. An eigenstate |E<sub>k</sub>{"\u27E9"} evolves as:</p>
+        <p className="text-center bg-gray-100 p-3 rounded-lg">|E<sub>k</sub>{"\u27E9"} {"\u2192"} <em>e</em><sup>{"\u2212"}iE<sub>k</sub>t</sup> |E<sub>k</sub>{"\u27E9"}</p>
+        <p>The factor <em>e</em><sup>{"\u2212"}iE<sub>k</sub>t</sup> is just a <strong>phase</strong>. It changes the "direction" of the amplitude in the complex plane but doesn't affect the probability: |<em>e</em><sup>{"\u2212"}iE<sub>k</sub>t</sup>|{"\u00B2"} = 1. So the probability distribution <strong>doesn't change</strong>!</p>
         <p>For a <strong>superposition</strong> of eigenstates, each component rotates at a different rate (proportional to its energy). This causes the probability distribution to oscillate over time.</p>
         <p>The oscillation period is related to the <strong>energy gap</strong>: larger gaps mean faster oscillation.</p>
       </div>
@@ -692,14 +692,14 @@ function SectionContent({ sectionId, molecule, bondLength, setBondLength, phaseC
       <div className="space-y-4">
         <h3 className="font-bold text-lg">Course Complete! Key Takeaways</h3>
         <ul className="list-disc pl-6 space-y-1">
-          <li>The Hamiltonian governs time evolution: |{"\u03C8"}(t){"\u27E9"} = e^(-iHt) |{"\u03C8"}(0){"\u27E9"}.</li>
+          <li>The Hamiltonian governs time evolution: |{"\u03C8"}(t){"\u27E9"} = <em>e</em><sup>{"\u2212"}i<em>H</em>t</sup> |{"\u03C8"}(0){"\u27E9"}.</li>
           <li>Eigenstates are stationary: their probabilities don't change over time.</li>
           <li>Superpositions of eigenstates oscillate at rates determined by energy gaps.</li>
           <li>Larger energy gaps produce faster oscillation.</li>
         </ul>
         <p className="mt-4 text-lg font-medium">Congratulations! You've learned how molecules are represented as quantum Hamiltonians, how to find their energy levels through diagonalization, and how quantum states evolve over time. These are the foundations of quantum molecular simulation!</p>
         <PracticeQuiz questions={[
-          {q: "Why does the ground state eigenstate not change over time?", a: "Under time evolution, it picks up a phase e^(-iE\u2080t), but the probability |e^(-iE\u2080t)|\u00B2 = 1 is unchanged. Only the 'direction' in complex space rotates, not the magnitude."},
+          {q: "Why does the ground state eigenstate not change over time?", a: "Under time evolution, it picks up a phase factor exp(\u2212iE\u2080t), but the magnitude of that factor is always 1, so the probabilities are unchanged. Only the 'direction' in complex space rotates, not the magnitude."},
           {q: "If \u0394E = 0.55 Ha between two eigenstates, what is the oscillation period?", a: "T = 2\u03C0/\u0394E = 2\u03C0/0.55 \u2248 11.4 (in natural units where \u0127=1)."},
         ]} />
       </div>
